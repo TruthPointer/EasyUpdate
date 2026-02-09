@@ -1,6 +1,6 @@
 {
   "sources": [
-    "https://github.com/TruthPointer/EasyUpdate/update_info.json"
+    "https://github.com/TruthPointer/EasyUpdate/blob/main/EasyUpdate/app/src/main/assets/update_info.json"
   ],
   "appInfos": [
     {

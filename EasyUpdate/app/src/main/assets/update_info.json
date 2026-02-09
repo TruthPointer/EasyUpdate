@@ -1,0 +1,20 @@
+{
+  "sources": [
+    "https://github.com/TruthPointer/EasyUpdate/update_info.json"
+  ],
+  "appInfos": [
+    {
+      "name": "自由门VPN",
+      "urls": [
+        "https://j.mp/fgv88"
+      ]
+    },
+    {
+      "name": "无界一点通",
+      "urls": [
+        "https://s3.amazonaws.com/wujie/um.apk",
+        "https://s3.amazonaws.com/693/um.apk"
+      ]
+    }
+  ]
+}

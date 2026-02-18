@@ -32,3 +32,6 @@
 -dontwarn com.google.re2j.Pattern
 
 -keep class android.support.graphics.drawable.** { *; }
+
+-keep class org.tpmobile.easyupdate.data.** { *; }
+-keep class com.google.gson.** { *; }

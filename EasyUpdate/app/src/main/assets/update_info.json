@@ -16,6 +16,18 @@
         "https://jynpos.com/download/um.apk"
       ]
     },
+	{
+      "name": "神州明見（手機版）",
+      "urls": [
+        "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmj.apk"
+      ]
+    },
+    {
+      "name": "神州明見（TV版）",
+      "urls": [
+        "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmjtv.apk"
+      ]
+    },
     {
       "name": "易升級",
       "urls": [

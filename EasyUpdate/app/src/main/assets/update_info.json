@@ -17,15 +17,15 @@
       ]
     },
     {
-      "name": "神州明見（手機版）",
+      "name": "易升級",
       "urls": [
-        "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmj.apk"
+        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/EasyUpdate.zip"
       ]
     },
     {
-      "name": "神州明見（TV版）",
+      "name": "明慧新聞",
       "urls": [
-        "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmjtv.apk"
+        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/MingHuiDaily.zip"
       ]
     }
   ]

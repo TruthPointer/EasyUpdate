@@ -86,21 +86,22 @@ object ZipUtil {
         //onProgress?.invoke(100, "解压成功")
     }
 
-    suspend fun searchApkFile(path: File): String = withContext(Dispatchers.IO) {
-        var apkFilePath = ""
-        path.listFiles()?.forEach { file ->
-            if(file.isDirectory) {
-                apkFilePath = searchApkFile(file)
-                if(apkFilePath.isNotEmpty()){
-                    return@withContext apkFilePath
-                }
-            }else{
-                if(file.extension == "apk") {
-                    return@withContext file.absolutePath
+    suspend fun searchFile(path: File, extension: String = "apk"): String =
+        withContext(Dispatchers.IO) {
+            var apkFilePath = ""
+            path.listFiles()?.forEach { file ->
+                if (file.isDirectory) {
+                    apkFilePath = searchFile(file)
+                    if (apkFilePath.isNotEmpty()) {
+                        return@withContext apkFilePath
+                    }
+                } else {
+                    if (file.extension.equals(extension, ignoreCase = true)) {
+                        return@withContext file.absolutePath
+                    }
                 }
             }
+            return@withContext ""
         }
-        return@withContext ""
-    }
 
 }

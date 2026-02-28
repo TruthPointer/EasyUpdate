@@ -14,7 +14,7 @@
 
 |  類別  |說明|
 | :---   | :---        |
-|開發工具	|Android Studio 2025.2.3|
+|開發工具	|Android Studio 2025.3.1|
 |語言|Kotlin|
 |适合的Android系统|7.0+|
 |官方库之外引用的庫|zip4j, gson|

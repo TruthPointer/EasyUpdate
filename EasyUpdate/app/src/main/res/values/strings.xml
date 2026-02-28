@@ -2,12 +2,14 @@
     <!--<string name="app_name">EasyUpdate</string>-->
     <string name="app_name_cn">易升级</string>
 
-    <string name="version_name" translatable="false">V1.1.20260218</string>
-    <string name="app_name_version_cn">易升级 V1.1.20260218</string>
+    <string name="version_name" translatable="false">V1.2.20260228</string>
+    <string name="app_name_version_cn">易升级 V1.2.20260228</string>
 
     <string name="dialog_button_ok">确定</string>
     <string name="dialog_button_cancel">取消</string>
     <string name="dialog_tip">提示</string>
     <string name="dialog_about">关于</string>
+
+    <string name="quit_the_app_after_pressing_back_key_once_again">再按一次返回键退出程序！</string>
 
 </resources>

@@ -27,6 +27,7 @@ android {
         debug{
             resValue("string", "app_name", "EasyUpdate")
             buildConfigField ("boolean", "MY_DEBUG", "true")
+            applicationIdSuffix = ".debug"
         }
         release {
             resValue("string", "app_name", "易升级")

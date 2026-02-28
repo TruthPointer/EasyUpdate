@@ -1,41 +1,54 @@
 {
+  "version": "1.0.20260226.1",
   "sources": [
     "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/update_info.json"
   ],
   "appInfos": [
     {
+      "name": "易升级",
+      "description": "简易有效的程序更新工具",
+      "withTutorial": true,
+      "urls": [
+        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/EasyUpdate.zip"
+      ]
+    },
+    {
       "name": "自由门VPN",
+      "description": "世界知名、功德无量的翻墙软件之一",
+      "withTutorial": false,
       "urls": [
         "https://j.mp/fgv88"
       ]
     },
     {
       "name": "无界一点通",
+      "description": "世界知名、功德无量的翻墙软件之一",
+      "withTutorial": false,
       "urls": [
         "https://github.com/wujieliulan/download/raw/master/um.apk",
         "https://jynpos.com/download/um.apk"
       ]
     },
-	{
-      "name": "神州明見（手機版）",
+    {
+      "name": "神州明见\n(手机版)",
+      "description": "一款破除信息枷锁、了解真相的手机版翻墙软件",
+      "withTutorial": false,
       "urls": [
         "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmj.apk"
       ]
     },
     {
-      "name": "神州明見（TV版）",
+      "name": "神州明见\n(TV版)",
+      "description": "一款破除信息枷锁、了解真相的翻墙软件，适合平板、智能电视和机顶盒上使用",
+      "withTutorial": false,
       "urls": [
         "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmjtv.apk"
       ]
     },
     {
-      "name": "易升級",
-      "urls": [
-        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/EasyUpdate.zip"
-      ]
-    },
-    {
-      "name": "明慧新聞",
+      "name": "明慧新闻",
+      "description": "借助安卓“自由门VPN”或“无界一点通”的代理服务，分享每日明慧新闻，助您了解法轮大法真相",
+      "withTutorial": true,
       "urls": [
         "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/MingHuiDaily.zip"
       ]

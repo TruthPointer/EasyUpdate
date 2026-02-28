@@ -1,11 +1,11 @@
 package org.tpmobile.easyupdate.ui
 
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,13 +29,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,11 +68,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.google.gson.Gson
@@ -83,9 +90,11 @@ import org.tpmobile.easyupdate.data.AppInfo
 import org.tpmobile.easyupdate.data.UpdateInfo
 import org.tpmobile.easyupdate.ui.theme.EasyUpdateTheme
 import org.tpmobile.easyupdate.ui.viewmodel.ActivityMainViewModel
+import org.tpmobile.easyupdate.util.CHECK_LIST
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TIME_INTERVAL_MAX
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TIME_INTERVAL_MIN
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TRY_TIMES
+import org.tpmobile.easyupdate.util.EncryptUtils
 import org.tpmobile.easyupdate.util.HttpUtil
 import org.tpmobile.easyupdate.util.Logger
 import org.tpmobile.easyupdate.util.PREF_TIME_INTERVAL_MAX
@@ -102,6 +111,7 @@ import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
 
+    private var exitTime = 0L
     var apkFileForInstall: String = ""
     val viewModel: ActivityMainViewModel by viewModels()
 
@@ -109,6 +119,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        dispatchOnBackEvent()
 
         viewModel.apkFileForInstall.observe(this) { filePath ->
             Logger.i("1.[apkFileForInstall.observe]...")
@@ -142,7 +154,7 @@ class MainActivity : ComponentActivity() {
                                 IconButton(onClick = {
                                     showRefreshDialog = true
                                 }) {
-                                    Icon(Icons.Filled.Refresh, null)
+                                    Icon(Icons.Filled.Refresh, "更新源")
                                 }
                             } else {
                                 toast("没有可用于更新的源！")
@@ -150,12 +162,12 @@ class MainActivity : ComponentActivity() {
                             IconButton(onClick = {
                                 showSettingsDialog = true
                             }) {
-                                Icon(Icons.Filled.Settings, null)
+                                Icon(Icons.Filled.Settings, "设置")
                             }
                             IconButton(onClick = {
                                 showAboutDialog = true
                             }) {
-                                Icon(Icons.Filled.Info, null)
+                                Icon(Icons.Filled.Info, "程序信息")
                             }
                         })
                     }) { innerPadding ->
@@ -246,6 +258,21 @@ class MainActivity : ComponentActivity() {
             toast("安装出错，详情：${e.message}")
         }
     }
+
+    fun dispatchOnBackEvent() {
+        onBackPressedDispatcher.addCallback(
+            this,
+            onBackPressedCallback = object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if ((System.currentTimeMillis() - exitTime) > 2000) {
+                        toast(R.string.quit_the_app_after_pressing_back_key_once_again)
+                        exitTime = System.currentTimeMillis()
+                    } else {
+                        finish()
+                    }
+                }
+            })
+    }
 }
 
 @Composable
@@ -292,6 +319,7 @@ fun AppInfoItem(
     var currentTryTimes by remember { mutableIntStateOf(1) }
     var currentProgress by remember { mutableIntStateOf(0) }
     var cancelJoinJob by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
     var job: Job? = null
 
     val disableIndex by viewModel.disableIndex.observeAsState()
@@ -305,8 +333,8 @@ fun AppInfoItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        elevation = CardDefaults.cardElevation(12.dp),
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
     ) {
         Column(
             modifier = Modifier
@@ -320,11 +348,13 @@ fun AppInfoItem(
             ) {
                 Text(
                     text = data.name,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.fillMaxWidth(0.5f)
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight(800),
+                    textAlign = TextAlign.Center,
+                    //modifier = Modifier.fillMaxWidth(0.2f)
                 )
                 Row(
-                    Modifier.fillMaxWidth(0.5f),
+                    //Modifier.fillMaxWidth(0.7f),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -362,7 +392,7 @@ fun AppInfoItem(
                                     //taskRunningDetails = ""
                                     currentProgress = 0
                                     currentTryTimes = index
-                                    taskRunningDetails = "已下载${currentProgress}%"
+                                    taskRunningDetails = "已下载0%"
                                     hideProgressBar = false
                                     urlIndex = when {
                                         tryTimes >= data.urls.size -> {
@@ -447,7 +477,7 @@ fun AppInfoItem(
                                         zipFile, unzipPath, onProgress = { progress, info ->
                                             currentProgress = progress
                                             taskRunningDetails = "已解压${currentProgress}%"
-                                            Logger.e("解压状态：$info")
+                                            Logger.i("解压状态：$info")
                                         }).fold(
                                         onSuccess = {
                                             Logger.i("解压完成1")
@@ -479,22 +509,48 @@ fun AppInfoItem(
                                     taskRunningDetails = "正在检查安装文件..."
                                     delay(500)
                                     taskRunningDetails = ""
-                                    apkFile = ZipUtil.searchApkFile(File(unzipPath))
+                                    apkFile = ZipUtil.searchFile(File(unzipPath))
                                 }
 
-                                //3.安装
+                                //4.安装
                                 if (!isActive || apkFile.isEmpty()) {
                                     viewModel.setDiableIndex(-1)
                                     enabledState = true
                                     loadingState = false
-                                    taskRunningDetails = "解压文件内无有效可安装文件！"
-                                    context.toast("解压文件内无有效可安装文件！")
+                                    taskRunningDetails =
+                                        if (apkFile.isEmpty()) "解压文件内无有效可安装文件！" else ""
+                                    if (apkFile.isEmpty())
+                                        context.toast("解压文件内无有效可安装文件！")
                                     return@launch
                                 }
+                                //4.1
+                                val apkName = File(apkFile).nameWithoutExtension
+                                if (CHECK_LIST.find {
+                                        it.equals(
+                                            apkName,
+                                            ignoreCase = true
+                                        )
+                                    } != null) {
+                                    taskRunningDetails = "验证安装文件..."
+                                    Logger.i("找到 $apkName， 需要验证...")
+                                    if (!EncryptUtils.isMySignature(apkFile)) {
+                                        Logger.e("【验证失败】遇到无效的安装文件，无法继续安装！")
+                                        viewModel.setDiableIndex(-1)
+                                        enabledState = true
+                                        loadingState = false
+                                        taskRunningDetails = "验证安装文件失败！"
+                                        context.toast("验证安装文件失败，无法继续安装！")
+                                        return@launch
+                                    }
+                                    Logger.i("【验证成功】")
+                                    taskRunningDetails = "验证安装文件成功！"
+                                    delay(1000)
+                                }
+                                //4.2
                                 taskRunningDetails = "等待安装..."
                                 viewModel.setApkFileForInstall(apkFile)
 
-                                //4.恢复初始状态
+                                //6.恢复初始状态
                                 viewModel.setDiableIndex(-1)
                                 enabledState = true
                                 loadingState = false
@@ -504,33 +560,210 @@ fun AppInfoItem(
                         },
                         enabled = enabledState && (disableIndex!! == -1 || disableIndex == itemIndex) && enabledUpdateButtonState
                     ) {
-                        Icon(Icons.Filled.PlayArrow, null)
+                        Icon(Icons.Filled.PlayArrow, "更新")
                     }
-                    IconButton(onClick = {
-                        enabledUpdateButtonState = false
-                        loadingState = false
-                        cancelJoinJob = true
-                        scope.launch {
-                            delay(2000)
-                            Logger.e("cancelAndJoin...")
-
-                            job?.cancel(CancellationException("自定义"))
-                            job?.join()
-                            Logger.e("cancelAndJoin---")
-                            enabledUpdateButtonState = true
-                            cancelJoinJob = false
-                            enabledState = true
+                    IconButton(
+                        onClick = {
+                            enabledUpdateButtonState = false
                             loadingState = false
-                            viewModel.setDiableIndex(-1)
+                            cancelJoinJob = true
+                            scope.launch {
+                                delay(2000)
+                                Logger.e("cancelAndJoin...")
+
+                                job?.cancel(CancellationException("自定义"))
+                                job?.join()
+                                Logger.e("cancelAndJoin---")
+                                enabledUpdateButtonState = true
+                                cancelJoinJob = false
+                                enabledState = true
+                                loadingState = false
+                                viewModel.setDiableIndex(-1)
+                            }
+                        },
+                        enabled = !enabledState && (disableIndex!! == -1 || disableIndex == itemIndex)
+                    ) {
+                        Icon(ImageVector.vectorResource(R.drawable.ic_action_stop), "取消")
+                    }
+                    if (data.withTutorial == true) {
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "更多")
                         }
-                    }, enabled = !enabledState && (disableIndex!! == -1 || disableIndex == itemIndex)) {
-                        Icon(ImageVector.vectorResource(R.drawable.ic_action_stop), null)
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("分享程序") },
+                                onClick = {
+                                    expanded = false
+                                    try {
+                                        scope.launch {
+                                            //1、查找已下载的文件
+                                            var unzipPath: File?
+                                            var fileName: String
+                                            var apkFilePath = ""
+                                            data.urls.forEach { url ->
+                                                fileName = File(url).nameWithoutExtension
+                                                if (url.endsWith(".apk", ignoreCase = true)) {
+                                                    apkFilePath =
+                                                        context.cacheDir.listFiles { it.isFile }
+                                                            ?.find { it.nameWithoutExtension == fileName }?.absolutePath.toString()
+                                                } else {//其它，包括 .zip 文件
+                                                    unzipPath = context.cacheDir
+                                                        .listFiles { it.isDirectory }
+                                                        ?.find { it.name == "${fileName}-unzip" }
+                                                    if (unzipPath == null) return@forEach
+                                                    apkFilePath = ZipUtil.searchFile(unzipPath)
+                                                    if (apkFilePath.isEmpty()) return@forEach
+                                                }
+                                            }
+                                            if (apkFilePath.isEmpty() || !File(apkFilePath).exists()) {
+                                                context.toast("没有找到可分享的文件")
+                                                return@launch
+                                            }
+                                            Logger.i("share: $apkFilePath")
+                                            //2、分享
+                                            val authority =
+                                                context.packageName + ".fileProvider"
+                                            val apkUri = FileProvider.getUriForFile(
+                                                context,
+                                                authority,
+                                                File(apkFilePath)
+                                            )
+                                            ShareCompat.IntentBuilder(context)
+                                                .setStream(apkUri)
+                                                .setType("application/*")//使用 application/vnd.android.package-archive 会导致不显示蓝牙
+                                                .startChooser()
+                                        }
+                                    } catch (e: Exception) {
+                                        Logger.e(e.message ?: "未知异常")
+                                        context.toast("分享文件错误！详情：${e.message ?: "未知异常"}")
+                                    }
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("查看教程") },
+                                onClick = {
+                                    expanded = false
+                                    try {
+                                        scope.launch {
+                                            //1、查找已下载的文件
+                                            var unzipPath: File?
+                                            var fileName: String
+                                            var pdfFilePath = ""
+                                            data.urls.forEach { url ->
+                                                fileName = File(url).nameWithoutExtension
+                                                if (url.endsWith(".apk", ignoreCase = true)) {
+                                                    pdfFilePath =
+                                                        context.cacheDir.listFiles { it.isFile }
+                                                            ?.find { it.nameWithoutExtension == fileName }?.absolutePath.toString()
+                                                } else {//其它，包括 .zip 文件
+                                                    unzipPath = context.cacheDir
+                                                        .listFiles { it.isDirectory }
+                                                        ?.find { it.name == "${fileName}-unzip" }
+                                                    if (unzipPath == null) return@forEach
+                                                    pdfFilePath =
+                                                        ZipUtil.searchFile(unzipPath, "pdf")
+                                                    if (pdfFilePath.isEmpty()) return@forEach
+                                                }
+                                            }
+                                            if (pdfFilePath.isEmpty() || !File(pdfFilePath).exists()) {
+                                                context.toast("没有找到教程")
+                                                return@launch
+                                            }
+                                            Logger.i("share: $pdfFilePath")
+                                            //2、打开
+                                            val authority =
+                                                context.packageName + ".fileProvider"
+                                            val pdfUri = FileProvider.getUriForFile(
+                                                context,
+                                                authority,
+                                                File(pdfFilePath)
+                                            )
+                                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                setDataAndType(pdfUri, "application/pdf")
+                                            }
+                                            context.startActivity(intent)
+                                        }
+                                    } catch (e: Exception) {
+                                        Logger.e(e.message ?: "未知异常")
+                                        context.toast("打开教程错误！详情：${e.message ?: "未知异常"}")
+                                    }
+                                }
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            {
+                                try {
+                                    scope.launch {
+                                        //1、查找已下载的文件
+                                        var unzipPath: File?
+                                        var fileName: String
+                                        var apkFilePath = ""
+                                        data.urls.forEach { url ->
+                                            fileName = File(url).nameWithoutExtension
+                                            if (url.endsWith(".apk", ignoreCase = true)) {
+                                                apkFilePath =
+                                                    context.cacheDir.listFiles { it.isFile }
+                                                        ?.find { it.nameWithoutExtension == fileName }?.absolutePath.toString()
+                                            } else {//其它，包括 .zip 文件
+                                                unzipPath = context.cacheDir
+                                                    .listFiles { it.isDirectory }
+                                                    ?.find { it.name == "${fileName}-unzip" }
+                                                if (unzipPath == null) return@forEach
+                                                apkFilePath = ZipUtil.searchFile(unzipPath)
+                                                if (apkFilePath.isEmpty()) return@forEach
+                                            }
+                                        }
+                                        if (apkFilePath.isEmpty() || !File(apkFilePath).exists()) {
+                                            context.toast("没有找到可分享的文件")
+                                            return@launch
+                                        }
+                                        Logger.i("share: $apkFilePath")
+                                        //2、分享
+                                        val authority = context.packageName + ".fileProvider"
+                                        val apkUri = FileProvider.getUriForFile(
+                                            context,
+                                            authority,
+                                            File(apkFilePath)
+                                        )
+                                        ShareCompat.IntentBuilder(context)
+                                            .setStream(apkUri)
+                                            .setType("application/*")//使用 application/vnd.android.package-archive 会导致不显示蓝牙
+                                            .startChooser()
+                                    }
+                                } catch (e: Exception) {
+                                    Logger.e(e.message ?: "未知异常")
+                                    context.toast("分享文件错误！详情：${e.message ?: "未知异常"}")
+                                }
+                            },
+                            enabled = enabledState && (disableIndex!! == -1 || disableIndex == itemIndex) && enabledUpdateButtonState
+                        ) {
+                            Icon(Icons.Filled.Share, "分享")
+                        }
                     }
                 }
             }
+            if (!data.description.isNullOrEmpty()) {
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    text = data.description,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
             data.urls.forEachIndexed { index, url ->
-                Text(text = "${index + 1}.${url}", textDecoration = TextDecoration.Underline)
+                Text(
+                    text = "${index + 1}.${url}",
+                    fontSize = 14.sp,
+                    lineHeight = 16.sp,
+                    textDecoration = TextDecoration.Underline
+                )
             }
 
             if (loadingState) {
@@ -569,7 +802,12 @@ fun AppInfoItem(
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator(modifier = Modifier.size(width = 50.dp, height = 50.dp))
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(
+                            width = 50.dp,
+                            height = 50.dp
+                        )
+                    )
                     Spacer(Modifier.height(8.dp))
                     Text("正在取消任务，请稍后！")
                     /*LaunchedEffect(null)  {
@@ -584,7 +822,7 @@ fun AppInfoItem(
     }
 }
 
-fun parseJsonData(context: Context, json: String): UpdateInfo? {
+fun parseJsonData(/*context: Context, */json: String): UpdateInfo? {
     try {
         if (json.isEmpty()) return null
 
@@ -615,7 +853,7 @@ fun parseJsonData(context: Context, json: String): UpdateInfo? {
         return updateInfo
     } catch (e: Exception) {
         Logger.i(e.message ?: "未知原因")
-        context.toast("Gson解析数据出错！！！详情：${e.message}")
+        //context.toast("Gson解析数据出错！！！详情：${e.message}")
         return null
     }
 }
@@ -634,7 +872,7 @@ fun ShowRefreshDialog(
     var loadingState by remember { mutableStateOf(false) }
     var closeDialog by remember { mutableStateOf(false) }
     var cancelJoinJob by remember { mutableStateOf(false) }
-    var job: Job ?= null
+    var job: Job? = null
 
     var currentTryTimes by remember { mutableIntStateOf(0) }
     val tryTimes = context.getPref(PREF_TRY_TIMES, DEFAULT_VALUE_TRY_TIMES)
@@ -763,7 +1001,7 @@ fun ShowRefreshDialog(
                                     //2.解析
                                     taskRunningDetails = "正在解析..."
                                     val newUpdateInfo =
-                                        parseJsonData(context, File(filePath).readText())
+                                        parseJsonData(File(filePath).readText())
                                     if (newUpdateInfo?.isUpdateInfoValid() == true) {
                                         viewModel.setUpdateInfo(newUpdateInfo)
                                         closeDialog = true
@@ -774,7 +1012,7 @@ fun ShowRefreshDialog(
                                         val delayTimeSecond =
                                             Random.nextInt(timeIntervalMin, timeIntervalMax)
                                         taskRunningDetails =
-                                            "下载出错了，等待${delayTimeSecond}秒再尝试..."
+                                            "解析出错了，等待${delayTimeSecond}秒再尝试..."
                                         delay(delayTimeSecond * 1000L)
                                         continue
                                     }
@@ -840,7 +1078,7 @@ fun ShowSettingsDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("尝试次数：")
+                    Text("尝试次数")
                     TextField(
                         modifier = Modifier.onFocusChanged({ focusState ->
                             val times = tryTimes.toIntWithDefaultZero()
@@ -857,15 +1095,16 @@ fun ShowSettingsDialog(
                             }
                         })
                 }
+                Spacer(Modifier.height(12.dp))
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start,
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("访问间隔(秒)：")
+                    Text("访问间隔(秒)")
                     TextField(
                         modifier = Modifier
-                            .width(70.dp)
+                            .width(65.dp)
                             .onFocusChanged({ focusState ->
                                 val min = timeIntervalMin.toIntWithDefaultZero()
                                 if (!focusState.isFocused && min == 0) {
@@ -882,10 +1121,10 @@ fun ShowSettingsDialog(
                             }
                             timeIntervalMin = it
                         })
-                    Text("-")
+                    Text("-", Modifier.width(10.dp))
                     TextField(
                         modifier = Modifier
-                            .width(70.dp)
+                            //.fillMaxWidth(1f)
                             .onFocusChanged({ focusState ->
                                 val max = timeIntervalMax.toIntWithDefaultZero()
                                 if (!focusState.isFocused && max == 0) {

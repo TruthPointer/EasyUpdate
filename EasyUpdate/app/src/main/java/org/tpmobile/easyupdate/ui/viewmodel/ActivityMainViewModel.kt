@@ -5,8 +5,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import org.tpmobile.easyupdate.MyApp
 import org.tpmobile.easyupdate.data.UpdateInfo
 import org.tpmobile.easyupdate.ui.parseJsonData
+import org.tpmobile.easyupdate.util.Logger
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -15,6 +17,7 @@ import java.io.InputStreamReader
 class ActivityMainViewModel : ViewModel() {
 
     private val emptyUpdateInfo = UpdateInfo(
+        version = "",
         sources = mutableListOf(),
         appInfos = mutableListOf()
     )
@@ -38,22 +41,61 @@ class ActivityMainViewModel : ViewModel() {
     }
 
     fun setUpdateInfo(updateInfo: UpdateInfo) {
-        _updateInfo.value = updateInfo
+        refreshUpdateInfo(updateInfo)
+        //_updateInfo.value = updateInfo
     }
 
     fun initUpdateInfo(context: Context) {
-        var json = ""
         val updateInfoFile = File(context.cacheDir, "update_info.json")
         if (updateInfoFile.exists()) {
+            var cacheUpdateInfo: UpdateInfo? = null
             BufferedReader(InputStreamReader(FileInputStream(updateInfoFile))).use { bufferedReader ->
-                json = bufferedReader.readLines().joinToString("\n")
+                val json = bufferedReader.readLines().joinToString("\n")
+                cacheUpdateInfo = parseJsonData(json) ?: emptyUpdateInfo
+            }
+            var assetsUpdateInfo: UpdateInfo? = null
+            BufferedReader(InputStreamReader(context.assets.open("update_info.json"))).use { bufferedReader ->
+                val json = bufferedReader.readLines().joinToString("\n")
+                assetsUpdateInfo = parseJsonData(json) ?: emptyUpdateInfo
+            }
+            if (assetsUpdateInfo?.isAssetsNewerThanCache(
+                    assetsUpdateInfo.version,
+                    cacheUpdateInfo?.version
+                ) == true
+            ) {
+                Logger.i("initUpdateInfo: assets的比cache的新")
+                updateInfoFile.delete()
+                _updateInfo.value = assetsUpdateInfo
+            } else {
+                Logger.i("initUpdateInfo: assets的比cache的旧")
+                _updateInfo.value = cacheUpdateInfo ?: emptyUpdateInfo
             }
         } else {
             BufferedReader(InputStreamReader(context.assets.open("update_info.json"))).use { bufferedReader ->
-                json = bufferedReader.readLines().joinToString("\n")
+                val json = bufferedReader.readLines().joinToString("\n")
+                _updateInfo.value = parseJsonData(json) ?: emptyUpdateInfo
             }
         }
-        _updateInfo.value = parseJsonData(context, json) ?: emptyUpdateInfo
+    }
+
+    fun refreshUpdateInfo(updateInfo: UpdateInfo) {
+        var assetsUpdateInfo: UpdateInfo? = null
+        BufferedReader(InputStreamReader(MyApp.appContext.assets.open("update_info.json"))).use { bufferedReader ->
+            val json = bufferedReader.readLines().joinToString("\n")
+            assetsUpdateInfo = parseJsonData(json) ?: emptyUpdateInfo
+        }
+        if (assetsUpdateInfo?.isAssetsNewerThanCache(
+                assetsUpdateInfo.version,
+                updateInfo.version
+            ) == true
+        ) {
+            Logger.i("refreshUpdateInfo: assets的比更新到的新")
+            File(MyApp.appContext.cacheDir, "update_info.json").delete()
+            _updateInfo.value = assetsUpdateInfo
+        } else {
+            Logger.i("refreshUpdateInfo: assets的比更新到的旧")
+            _updateInfo.value = updateInfo
+        }
     }
 
     class Factory() : ViewModelProvider.NewInstanceFactory() {

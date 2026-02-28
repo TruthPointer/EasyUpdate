@@ -1,5 +1,9 @@
 package org.tpmobile.easyupdate.util
 
+
+const val SIG_SEC = "15499703c51403bf8b0f379d9ac15138409716f53f123a9416fd05c0bfd9b4a9"
+val CHECK_LIST = listOf("EasyUpdate", "MingHuiDaily")
+
 const val STATE_TEST = true
 const val MAX_TRY_TIMES = 2
 

@@ -2,8 +2,8 @@
     <!--<string name="app_name">EasyUpdate</string>-->
     <string name="app_name_cn">易升级</string>
 
-    <string name="version_name" translatable="false">V1.2.20260228</string>
-    <string name="app_name_version_cn">易升级 V1.2.20260228</string>
+    <string name="version_name" translatable="false">V1.2.20260301</string>
+    <string name="app_name_version_cn">易升级 V1.2.20260301</string>
 
     <string name="dialog_button_ok">确定</string>
     <string name="dialog_button_cancel">取消</string>

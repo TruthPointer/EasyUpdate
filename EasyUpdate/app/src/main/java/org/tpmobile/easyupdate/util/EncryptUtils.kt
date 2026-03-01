@@ -52,7 +52,7 @@ object EncryptUtils {
 
     private fun encryptAlgorithm(data: ByteArray, algorithm: String = "SHA-256"): String {
         return try {
-            val md = MessageDigest.getInstance("SHA-256")
+            val md = MessageDigest.getInstance(algorithm)
             md.update(data)
             md.digest().toHex()
         } catch (e: NoSuchAlgorithmException) {
@@ -75,9 +75,12 @@ object EncryptUtils {
         }
 
         if (bytes == null || bytes.isEmpty()) {
+            println("sha256=, SIG_SEC=$SIG_SEC")
             return ""
         }
-        return encryptAlgorithm(bytes)
+        val sha256 = encryptAlgorithm(bytes)
+        Logger.i(TAG, "sha256=$sha256, SIG_SEC=$SIG_SEC")
+        return sha256
     }
 
     fun isMySignature(apkPath: String): Boolean = getSha256OfApkSignature(apkPath) == SIG_SEC

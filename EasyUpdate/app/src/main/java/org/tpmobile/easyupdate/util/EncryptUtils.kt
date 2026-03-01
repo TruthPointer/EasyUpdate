@@ -1,6 +1,7 @@
 package org.tpmobile.easyupdate.util
 
 import android.content.pm.PackageManager
+import android.content.pm.SigningInfo
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,8 +18,7 @@ object EncryptUtils {
     private const val TAG = "EncryptUtils"
 
     suspend fun computeFileSha512(
-        file: File,
-        onProgress: ((Int, String) -> Unit)? = null
+        file: File, onProgress: ((Int, String) -> Unit)? = null
     ): Result<String> = withContext(Dispatchers.IO) {
         return@withContext try {
             val md = MessageDigest.getInstance("SHA-512")
@@ -63,14 +63,18 @@ object EncryptUtils {
 
     fun getSha256OfApkSignature(apkPath: String): String {
         val bytes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            MyApp.appContext.packageManager.getPackageArchiveInfo(
+            val packageInfo = MyApp.appContext.packageManager.getPackageArchiveInfo(
                 apkPath,
                 PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong())
-            )?.signatures?.get(0)?.toByteArray()
+            )
+            if (packageInfo?.signatures == null) {
+                (packageInfo?.signingInfo as SigningInfo).apkContentsSigners[0].toByteArray()
+            } else {
+                packageInfo.signatures?.get(0)?.toByteArray()
+            }
         } else {
             MyApp.appContext.packageManager.getPackageArchiveInfo(
-                apkPath,
-                PackageManager.GET_SIGNATURES
+                apkPath, PackageManager.GET_SIGNATURES
             )?.signatures?.get(0)?.toByteArray()
         }
 

@@ -90,7 +90,7 @@ import org.tpmobile.easyupdate.data.AppInfo
 import org.tpmobile.easyupdate.data.UpdateInfo
 import org.tpmobile.easyupdate.ui.theme.EasyUpdateTheme
 import org.tpmobile.easyupdate.ui.viewmodel.ActivityMainViewModel
-import org.tpmobile.easyupdate.util.CHECK_LIST
+import org.tpmobile.easyupdate.util.CHECK_MAP
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TIME_INTERVAL_MAX
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TIME_INTERVAL_MIN
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TRY_TIMES
@@ -108,6 +108,7 @@ import org.tpmobile.easyupdate.util.ktx.toast
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
+import kotlin.text.get
 
 class MainActivity : ComponentActivity() {
 
@@ -301,6 +302,7 @@ fun AppList(
         itemsIndexed(items = appInfos) { index, item ->
             AppInfoItem(index, item, viewModel)
         }
+
     }
 }
 
@@ -360,6 +362,12 @@ fun AppInfoItem(
                 ) {
                     IconButton(
                         onClick = {
+                            val searchAppName = CHECK_MAP[data.name] ?: ""
+                            if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                context.toast("未找到用于查找的文件名！")
+                                return@IconButton
+                            }
+
                             Logger.i("$[${data.name}] 正在更新...")
                             enabledState = false
                             loadingState = true
@@ -509,7 +517,7 @@ fun AppInfoItem(
                                     taskRunningDetails = "正在检查安装文件..."
                                     delay(500)
                                     taskRunningDetails = ""
-                                    apkFile = ZipUtil.searchFile(File(unzipPath))
+                                    apkFile = ZipUtil.searchFile(File(unzipPath), searchAppName)
                                 }
 
                                 //4.安装
@@ -525,7 +533,7 @@ fun AppInfoItem(
                                 }
                                 //4.1
                                 val apkName = File(apkFile).nameWithoutExtension
-                                if (CHECK_LIST.find {
+                                if (CHECK_MAP.values.find {
                                         it.equals(
                                             apkName,
                                             ignoreCase = true
@@ -596,9 +604,16 @@ fun AppInfoItem(
                             DropdownMenuItem(
                                 text = { Text("分享程序") },
                                 onClick = {
+                                    val searchAppName = CHECK_MAP[data.name] ?: ""
+                                    if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                        context.toast("未找到用于查找的文件名！")
+                                        return@DropdownMenuItem
+                                    }
+
                                     expanded = false
                                     try {
                                         scope.launch {
+
                                             //1、查找已下载的文件
                                             var unzipPath: File?
                                             var fileName: String
@@ -614,7 +629,7 @@ fun AppInfoItem(
                                                         .listFiles { it.isDirectory }
                                                         ?.find { it.name == "${fileName}-unzip" }
                                                     if (unzipPath == null) return@forEach
-                                                    apkFilePath = ZipUtil.searchFile(unzipPath)
+                                                    apkFilePath = ZipUtil.searchFile(unzipPath, searchAppName)
                                                     if (apkFilePath.isEmpty()) return@forEach
                                                 }
                                             }
@@ -645,6 +660,12 @@ fun AppInfoItem(
                             DropdownMenuItem(
                                 text = { Text("查看教程") },
                                 onClick = {
+                                    val searchAppName = CHECK_MAP[data.name] ?: ""
+                                    if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                        context.toast("未找到用于查找的文件名！")
+                                        return@DropdownMenuItem
+                                    }
+
                                     expanded = false
                                     try {
                                         scope.launch {
@@ -664,7 +685,7 @@ fun AppInfoItem(
                                                         ?.find { it.name == "${fileName}-unzip" }
                                                     if (unzipPath == null) return@forEach
                                                     pdfFilePath =
-                                                        ZipUtil.searchFile(unzipPath, "pdf")
+                                                        ZipUtil.searchFile(unzipPath, searchAppName,"pdf")
                                                     if (pdfFilePath.isEmpty()) return@forEach
                                                 }
                                             }
@@ -698,6 +719,12 @@ fun AppInfoItem(
                     } else {
                         IconButton(
                             {
+                                val searchAppName = CHECK_MAP[data.name] ?: ""
+                                if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                    context.toast("未找到用于查找的文件名！")
+                                    return@IconButton
+                                }
+
                                 try {
                                     scope.launch {
                                         //1、查找已下载的文件
@@ -715,7 +742,7 @@ fun AppInfoItem(
                                                     .listFiles { it.isDirectory }
                                                     ?.find { it.name == "${fileName}-unzip" }
                                                 if (unzipPath == null) return@forEach
-                                                apkFilePath = ZipUtil.searchFile(unzipPath)
+                                                apkFilePath = ZipUtil.searchFile(unzipPath, searchAppName)
                                                 if (apkFilePath.isEmpty()) return@forEach
                                             }
                                         }

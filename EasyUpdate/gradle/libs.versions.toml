@@ -1,5 +1,5 @@
 [versions]
-agp = "9.0.0"
+agp = "9.1.0"
 coreKtx = "1.16.0"
 gson = "2.13.2"
 junit = "4.13.2"
@@ -38,3 +38,4 @@ androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name =
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+

@@ -28,9 +28,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -96,6 +96,7 @@ import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TIME_INTERVAL_MIN
 import org.tpmobile.easyupdate.util.DEFAULT_VALUE_TRY_TIMES
 import org.tpmobile.easyupdate.util.EncryptUtils
 import org.tpmobile.easyupdate.util.HttpUtil
+import org.tpmobile.easyupdate.util.InfoHelper
 import org.tpmobile.easyupdate.util.Logger
 import org.tpmobile.easyupdate.util.PREF_TIME_INTERVAL_MAX
 import org.tpmobile.easyupdate.util.PREF_TIME_INTERVAL_MIN
@@ -108,7 +109,6 @@ import org.tpmobile.easyupdate.util.ktx.toast
 import java.io.File
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.random.Random
-import kotlin.text.get
 
 class MainActivity : ComponentActivity() {
 
@@ -363,7 +363,7 @@ fun AppInfoItem(
                     IconButton(
                         onClick = {
                             val searchAppName = CHECK_MAP[data.name] ?: ""
-                            if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                            if (CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
                                 context.toast("未找到用于查找的文件名！")
                                 return@IconButton
                             }
@@ -554,6 +554,21 @@ fun AppInfoItem(
                                     taskRunningDetails = "验证安装文件成功！"
                                     delay(1000)
                                 }
+                                //4.1.1 检查版本看是否需要升级
+                                taskRunningDetails = "程序升级检查..."
+                                Logger.i("检查是否需要升级...")
+                                if(!InfoHelper.needUpdate(context, data.name, apkFile)){
+                                    Logger.e("【升级检测】无需升级")
+                                    viewModel.setDiableIndex(-1)
+                                    enabledState = true
+                                    loadingState = false
+                                    taskRunningDetails = "已安装程序是最新版本，无需升级！"
+                                    context.toast("已安装程序是最新版本，无需升级！")
+                                    return@launch
+                                }
+                                Logger.i("【升级检测】需要升级")
+                                taskRunningDetails = "升级检测完毕，需要升级！"
+                                delay(1000)
                                 //4.2
                                 taskRunningDetails = "等待安装..."
                                 viewModel.setApkFileForInstall(apkFile)
@@ -568,7 +583,7 @@ fun AppInfoItem(
                         },
                         enabled = enabledState && (disableIndex!! == -1 || disableIndex == itemIndex) && enabledUpdateButtonState
                     ) {
-                        Icon(Icons.Filled.PlayArrow, "更新")
+                        Icon(Icons.Filled.CloudDownload, "更新")
                     }
                     IconButton(
                         onClick = {
@@ -595,7 +610,7 @@ fun AppInfoItem(
                     }
                     if (data.withTutorial == true) {
                         IconButton(onClick = { expanded = !expanded }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "更多")
+                            Icon(Icons.Filled.MoreVert, contentDescription = "更多")
                         }
                         DropdownMenu(
                             expanded = expanded,
@@ -605,7 +620,7 @@ fun AppInfoItem(
                                 text = { Text("分享程序") },
                                 onClick = {
                                     val searchAppName = CHECK_MAP[data.name] ?: ""
-                                    if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                    if (CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
                                         context.toast("未找到用于查找的文件名！")
                                         return@DropdownMenuItem
                                     }
@@ -629,7 +644,8 @@ fun AppInfoItem(
                                                         .listFiles { it.isDirectory }
                                                         ?.find { it.name == "${fileName}-unzip" }
                                                     if (unzipPath == null) return@forEach
-                                                    apkFilePath = ZipUtil.searchFile(unzipPath, searchAppName)
+                                                    apkFilePath =
+                                                        ZipUtil.searchFile(unzipPath, searchAppName)
                                                     if (apkFilePath.isEmpty()) return@forEach
                                                 }
                                             }
@@ -661,7 +677,7 @@ fun AppInfoItem(
                                 text = { Text("查看教程") },
                                 onClick = {
                                     val searchAppName = CHECK_MAP[data.name] ?: ""
-                                    if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                    if (CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
                                         context.toast("未找到用于查找的文件名！")
                                         return@DropdownMenuItem
                                     }
@@ -685,7 +701,11 @@ fun AppInfoItem(
                                                         ?.find { it.name == "${fileName}-unzip" }
                                                     if (unzipPath == null) return@forEach
                                                     pdfFilePath =
-                                                        ZipUtil.searchFile(unzipPath, searchAppName,"pdf")
+                                                        ZipUtil.searchFile(
+                                                            unzipPath,
+                                                            searchAppName,
+                                                            "pdf"
+                                                        )
                                                     if (pdfFilePath.isEmpty()) return@forEach
                                                 }
                                             }
@@ -720,7 +740,7 @@ fun AppInfoItem(
                         IconButton(
                             {
                                 val searchAppName = CHECK_MAP[data.name] ?: ""
-                                if(CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
+                                if (CHECK_MAP.keys.contains(data.name) && searchAppName.isEmpty()) {
                                     context.toast("未找到用于查找的文件名！")
                                     return@IconButton
                                 }
@@ -742,7 +762,8 @@ fun AppInfoItem(
                                                     .listFiles { it.isDirectory }
                                                     ?.find { it.name == "${fileName}-unzip" }
                                                 if (unzipPath == null) return@forEach
-                                                apkFilePath = ZipUtil.searchFile(unzipPath, searchAppName)
+                                                apkFilePath =
+                                                    ZipUtil.searchFile(unzipPath, searchAppName)
                                                 if (apkFilePath.isEmpty()) return@forEach
                                             }
                                         }

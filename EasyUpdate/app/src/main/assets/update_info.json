@@ -1,5 +1,5 @@
 {
-  "version": "1.0.20260226.1",
+  "version": "1.0.20260701.1",
   "sources": [
     "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/update_info.json"
   ],
@@ -30,6 +30,22 @@
       ]
     },
     {
+      "name": "明慧新闻",
+      "description": "借助安卓“自由门VPN”或“无界一点通”的代理服务，实现安全、方便查看每日明慧新闻，助您了解法轮大法真相",
+      "withTutorial": true,
+      "urls": [
+        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/MingHuiDaily.zip"
+      ]
+    },
+    {
+      "name": "明慧广播",
+      "description": "借助安卓“自由门VPN”或“无界一点通”的代理服务，实现安全、方便在线收听明慧广播节目，助您了解法轮大法真相",
+      "withTutorial": true,
+      "urls": [
+        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/MingHuiRadio.zip"
+      ]
+    },
+    {
       "name": "神州明见\n(手机版)",
       "description": "一款破除信息枷锁、了解真相的手机版翻墙软件",
       "withTutorial": false,
@@ -43,14 +59,6 @@
       "withTutorial": false,
       "urls": [
         "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmjtv.apk"
-      ]
-    },
-    {
-      "name": "明慧新闻",
-      "description": "借助安卓“自由门VPN”或“无界一点通”的代理服务，分享每日明慧新闻，助您了解法轮大法真相",
-      "withTutorial": true,
-      "urls": [
-        "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/MingHuiDaily.zip"
       ]
     }
   ]

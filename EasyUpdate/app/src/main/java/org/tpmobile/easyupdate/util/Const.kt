@@ -2,10 +2,16 @@ package org.tpmobile.easyupdate.util
 
 
 const val SIG_SEC = "15499703c51403bf8b0f379d9ac15138409716f53f123a9416fd05c0bfd9b4a9"
-val CHECK_MAP = mapOf( "易升级" to "EasyUpdate", "明慧新闻" to "MingHuiDaily")
+val CHECK_MAP = mapOf(
+  "易升级" to "EasyUpdate",
+  "明慧新闻" to "MingHuiDaily",
+  "明慧广播" to "MingHuiRadio"
+)
+val CHECK_BY_JSON_NAME = listOf(
+  "自由门VPN",
+)
 
 const val STATE_TEST = true
-const val MAX_TRY_TIMES = 2
 
 /////////////////////////////////////////////////
 const val PREF_TRY_TIMES = "pref_try_times"

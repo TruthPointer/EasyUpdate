@@ -1,5 +1,5 @@
 {
-  "version": "1.0.20260701.1",
+  "version": "1.0.20260708.1",
   "sources": [
     "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/update_info.json"
   ],
@@ -43,22 +43,6 @@
       "withTutorial": true,
       "urls": [
         "https://github.com/TruthPointer/TruthPointer.github.io/raw/refs/heads/main/app/MingHuiRadio.zip"
-      ]
-    },
-    {
-      "name": "神州明见\n(手机版)",
-      "description": "一款破除信息枷锁、了解真相的手机版翻墙软件",
-      "withTutorial": false,
-      "urls": [
-        "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmj.apk"
-      ]
-    },
-    {
-      "name": "神州明见\n(TV版)",
-      "description": "一款破除信息枷锁、了解真相的翻墙软件，适合平板、智能电视和机顶盒上使用",
-      "withTutorial": false,
-      "urls": [
-        "https://github.com/szmj0/update/raw/refs/heads/main/extras/szmjtv.apk"
       ]
     }
   ]
